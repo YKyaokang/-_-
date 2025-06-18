@@ -1,0 +1,65 @@
+-- 创建数据库
+CREATE DATABASE IF NOT EXISTS resource_management_system DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+USE resource_management_system;
+
+-- 员工基本信息表
+CREATE TABLE IF NOT EXISTS employee (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '用户ID',
+    username VARCHAR(50) NOT NULL UNIQUE COMMENT '用户账号',
+    password VARCHAR(100) NOT NULL COMMENT '用户密码',
+    name VARCHAR(50) NOT NULL COMMENT '姓名',
+    phone VARCHAR(20) NOT NULL COMMENT '联系电话',
+    department VARCHAR(50) NOT NULL COMMENT '所属部门',
+    position VARCHAR(50) NOT NULL COMMENT '职位',
+    role VARCHAR(20) NOT NULL DEFAULT 'EMPLOYEE' COMMENT '角色：EMPLOYEE-普通员工，ADMIN-管理员',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted TINYINT NOT NULL DEFAULT 0 COMMENT '是否删除：0-未删除，1-已删除'
+) COMMENT '员工基本信息表';
+
+-- 行政资源表
+CREATE TABLE IF NOT EXISTS resource (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '资源编号',
+    category VARCHAR(50) NOT NULL COMMENT '资源大类',
+    category_code VARCHAR(20) NOT NULL COMMENT '资源大类标识',
+    name VARCHAR(100) NOT NULL COMMENT '资源名称',
+    quantity INT NOT NULL DEFAULT 0 COMMENT '资源数量',
+    status VARCHAR(20) NOT NULL DEFAULT 'AVAILABLE' COMMENT '资源状态：AVAILABLE-可用，IN_USE-使用中，MAINTENANCE-维护中',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted TINYINT NOT NULL DEFAULT 0 COMMENT '是否删除：0-未删除，1-已删除'
+) COMMENT '行政资源表';
+
+-- 资源申请表
+CREATE TABLE IF NOT EXISTS resource_application (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '申请单编号',
+    employee_id BIGINT NOT NULL COMMENT '申请人ID',
+    resource_id BIGINT NOT NULL COMMENT '资源ID',
+    quantity INT NOT NULL COMMENT '申请资源数量',
+    purpose VARCHAR(500) NOT NULL COMMENT '申请资源用途',
+    start_date DATE NOT NULL COMMENT '使用起始日期',
+    end_date DATE NOT NULL COMMENT '使用终止日期',
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING' COMMENT '申请状态：PENDING-待审批，APPROVED-已批准，REJECTED-已拒绝',
+    submit_flag TINYINT NOT NULL DEFAULT 0 COMMENT '提交标志：0-未提交，1-已提交',
+    approval_flag TINYINT NOT NULL DEFAULT 0 COMMENT '审批标志：0-未审批，1-已审批',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted TINYINT NOT NULL DEFAULT 0 COMMENT '是否删除：0-未删除，1-已删除',
+    FOREIGN KEY (employee_id) REFERENCES employee(id),
+    FOREIGN KEY (resource_id) REFERENCES resource(id)
+) COMMENT '资源申请表';
+
+-- 服务评价表
+CREATE TABLE IF NOT EXISTS service_evaluation (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '评价ID',
+    employee_id BIGINT NOT NULL COMMENT '评价人ID',
+    application_id BIGINT NOT NULL COMMENT '申请单ID',
+    rating INT NOT NULL COMMENT '评分（1-5）',
+    comment VARCHAR(500) COMMENT '评价内容',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted TINYINT NOT NULL DEFAULT 0 COMMENT '是否删除：0-未删除，1-已删除',
+    FOREIGN KEY (employee_id) REFERENCES employee(id),
+    FOREIGN KEY (application_id) REFERENCES resource_application(id)
+) COMMENT '服务评价表'; 
